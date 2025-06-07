@@ -7,6 +7,17 @@ import pandas as pd
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from openai import OpenAI
+from typing import Literal
+import matplotlib.pyplot as plt
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+)
+
+
+
 
 # ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -24,6 +35,7 @@ MAX_TOKENS = 25  # keep small to avoid unnecessary costs and speed up inference
 # 5. generate_with_hf → Prompts LLMs from HuggingFace using the transformers library.
 # 6. call_openai_gpt → Calls the OpenAI API to get a completion from gpt-4o-mini.
 # 7 generate_for_row → Decides if the generation should be done via OpenAI API or the transformers library checking "model_name".
+# 8. evaluate_results → Evaluates the results of the model's predictions against the gold standard, computing accuracy, precision, recall, and F1 score.
 
 def load_dataframe(path: Path) -> pd.DataFrame:
 
@@ -152,6 +164,61 @@ def generate_for_row(
         # The model returns the full text (prompt + generated). We extract only the generated text:
         continuation = generated_full[len(prompt_text) :]
         return continuation.strip()
+    
+def evaluate_results(
+    df: pd.DataFrame,
+    gold_column: str,
+    *,
+    choice_pattern: str = r"_choice_clean$",      # regex for IMPAQTS-PID columns formatting
+    average: Literal["macro", "micro", "weighted", "binary"] = "macro",
+    plot_path: str | None = None,
+) -> pd.DataFrame:
+    
+    # ─── Gather prediction columns ───────────────────────────────────────────────────────────────
+    choice_columns = [column for column in df.columns if re.search(choice_pattern, column)]
+    if gold_column in choice_columns:
+        choice_columns.remove(gold_column)
+
+    if not choice_columns:
+        raise ValueError(
+            f"No columns matching pattern '{choice_pattern}' found."
+        )
+
+    # ─── Compute metrics for each model ───────────────────────────────────────────────────────────────
+    results = {}
+    y_true = df[gold_column]
+
+    for col in choice_columns:
+        y_pred = df[col]
+        model_name = re.sub(choice_pattern, "", col)  # strip suffix for cleaner index
+
+        results[model_name] = {
+            "Accuracy": accuracy_score(y_true, y_pred),
+            "Precision": precision_score(
+                y_true, y_pred, average=average, zero_division=0
+            ),
+            "Recall": recall_score(
+                y_true, y_pred, average=average, zero_division=0
+            ),
+            "F1": f1_score(
+                y_true, y_pred, average=average, zero_division=0
+            ),
+        }
+
+    metrics_df = pd.DataFrame(results).T.sort_index()
+
+    # ─── Optional plot ───────────────────────────────────────────────────────────────
+    if plot_path:
+        ax = metrics_df.plot(kind="bar", figsize=(10, 6))
+        ax.set_ylim(0, 1)
+        ax.set_ylabel("%")
+        ax.set_title("MCG Task Evaluation Metrics")
+        plt.xticks(rotation=45, ha="right")
+        plt.tight_layout()
+        plt.savefig(plot_path, dpi=300)
+        plt.close()
+
+    return metrics_df
 
 
 # ─── MAIN LOOP ───────────────────────────────────────────────────────────────
@@ -218,11 +285,24 @@ def main() -> None:
         data_df[col_key_clean] = clean_answers
 
 
-
-    out_file = OUTPUT_DIR / f"MCQ_results.xlsx"
+    out_file = OUTPUT_DIR / f"MCQ_results.csv"
     data_df.to_csv(out_file, index=False)
-    print(f"Saved at {out_file}: all models processed!")
+    print(f"Saved at {out_file}: all models processed!\n")
 
+    # ─── Evaluate results ───────────────────────────────────────────────────────────────
+    print("Evaluating results...\n")
+    eval = evaluate_results(
+        data_df,
+        gold_column="right_answer_id",  # based on IMPAQTS-PID columns
+        choice_pattern=r"_choice_clean$",  # based on IMPAQTS-PID
+        average="macro",
+        plot_path=OUTPUT_DIR / "MCG_eval_plot.png"  # comment out if you don't want the plot
+    )
+    print("Evaluation completed.\n")
+    
+    eval_df = pd.DataFrame(eval).T
+    eval_df.to_csv(OUTPUT_DIR / "MCG_eval.csv", sep="\t", index=True)
+    print(f"Evaluation metrics saved at {OUTPUT_DIR / 'MCG_eval.csv'}")
 
 if __name__ == "__main__":
     main()
