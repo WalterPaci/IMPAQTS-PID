@@ -183,7 +183,7 @@ def evaluate_results(
         raise ValueError(
             f"No columns matching pattern '{choice_pattern}' found."
         )
-#new line added
+
     # ─── Compute metrics for each model ───────────────────────────────────────────────────────────────
     results = {}
     y_true = df[gold_column]
