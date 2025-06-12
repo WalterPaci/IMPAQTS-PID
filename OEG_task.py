@@ -2,6 +2,9 @@ import json
 import random
 from pathlib import Path
 from typing import List, Dict, Any
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import Dict, List, Tuple
 
 import pandas as pd
 import torch
@@ -15,6 +18,7 @@ DATA_PATH = Path("/data/IMPAQTS-PID.txt")
 COT_PROMPT_PATH = Path("/data/CoT_prompt.txt")
 FS_EXAMPLES_PATH = Path("/data/fs_examples.txt")
 OUTPUT_DIR = Path("/results/")  # ← Set your output directory
+JUDGE_INSTRUCTION = Path("/home/walter/IMPAQTS-PID/data/oeg_eval_instruct.txt")
 
 # ─── HELPER FUNCTIONS ─────────────────────────────────────────────────────────
 # 1. Load_dataframe → Loads the IMPAQTS-PIDA Dataset as a pandas DataFrame. 
@@ -25,6 +29,8 @@ OUTPUT_DIR = Path("/results/")  # ← Set your output directory
 # 6. load_hf_model_and_tokenizer → Loads a HuggingFace model and tokenizer onto the specified device (GPU or CPU).
 # 7. generate_with_hf → Prompts LLMs from HuggingFace using the transformers library.
 # 8. generate_for_row → Decides if the generation should be done via OpenAI API or the transformers library checking "model_name".
+# 9. GPT4o_as_Judge → Evaluate GPT4o-mini outputs using GPT-4o as judge
+#10. judgment_eval → Analyze GPT-4o evaluations and create comparative plot with percentages
 
 def load_dataframe(path: Path) -> pd.DataFrame:
 
@@ -165,6 +171,122 @@ def generate_for_row(
         continuation = generated_full[len(full_prompt) :]
         return continuation.strip()
 
+def GPT4o_as_Judge(df: pd.DataFrame) -> pd.DataFrame:
+
+    with open(JUDGE_INSTRUCTION, 'r', encoding='utf-8') as file:
+        instruct = file.read()
+    
+    zs_eval = []
+    fs_eval = []
+    CoT_eval = []
+    
+    openai_client = OpenAI(api_key=API_KEY)
+    
+    for idx, row in df.iterrows():
+        text = row['text']
+        zs_output = row['zs_gpt-4o-mini_output']
+        fs_output = row['fs_gpt-4o-mini_output']
+        CoT_output = row['CoT_gpt-4o-mini_output']
+        
+        prompts = {
+            'zs': f"{instruct}Testo: {text}\n\nOutput: {zs_output}\n\nValutazione: ",
+            'fs': f"{instruct}Testo: {text}\n\nOutput: {fs_output}\n\nValutazione: ",
+            'CoT': f"{instruct}Testo: {text}\n\nOutput: {CoT_output}\n\nValutazione: "
+        }
+        
+        for prompt_type, prompt in prompts.items():
+            completion = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Sei un assistente virtuale ben capace di comprendere i testi che ti vengono proposti."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            eval_result = completion.choices[0].message.content.strip()
+            
+            if prompt_type == 'zs':
+                zs_eval.append(eval_result)
+            elif prompt_type == 'fs':
+                fs_eval.append(eval_result)
+            else:  # CoT
+                CoT_eval.append(eval_result)
+        
+        print(f"Row {idx} evaluated → ZS: {zs_eval[-1]} | FS: {fs_eval[-1]} | CoT: {CoT_eval[-1]}")
+    
+    df['zs_evaluation'] = zs_eval
+    df['fs_evaluation'] = fs_eval
+    df['CoT_evaluation'] = CoT_eval
+    
+    return df
+
+def judgment_eval(df: pd.DataFrame) -> Tuple[Dict[str, Dict[str, float]], plt.Figure]:
+
+    categories = [
+        "Totalmente corretto",
+        "Corretto tra opzioni",
+        "Parzialmente corretto",
+        "Totalmente sbagliato",
+        "Risposta non fornita"
+    ]
+    
+      
+    colors = [
+        '#98FB98',  
+        '#FFF59D',  
+        '#FFCC80',  
+        '#FFAB91',  
+        '#E0E0E0'   
+    ]
+
+    eval_columns = ['zs_evaluation', 'fs_evaluation', 'CoT_evaluation']
+    prompt_types = ['Zero-shot', 'Few-shot', 'Chain-of-Thought']
+    
+    results = {prompt: {cat: 0.0 for cat in categories} for prompt in prompt_types}
+    
+    for col, prompt in zip(eval_columns, prompt_types):
+        total_responses = len(df[col].dropna())
+        for category in categories:
+            count = df[col].str.contains(category, case=False, na=False).sum()
+            percentage = (count / total_responses * 100) if total_responses > 0 else 0
+            results[prompt][category] = percentage
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    width = 0.15
+    x = np.arange(len(prompt_types))
+    
+    for i, (category, color) in enumerate(zip(categories, colors)):
+        percentages = [results[prompt][category] for prompt in prompt_types]
+        position = x + (i - len(categories)/2 + 0.5) * width
+        bars = ax.bar(position, percentages, width, label=category, color=color, alpha=0.85)
+        
+
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, height,
+            f'{height:.1f}%', ha='center', va='bottom', fontsize=8)
+    
+
+    ax.set_ylabel('Percentage of Responses (%)')
+    ax.set_title('GPT4o-mini performance by Prompt Type', pad=20)
+    ax.set_xticks(x)
+    ax.set_xticklabels(['0-shot', 'Few-shot', 'CoT'])
+    
+
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', 
+             title='Annotation Categories', 
+             fontsize='small', frameon=False)
+    
+    ax.set_ylim(0, 100)
+    ax.grid(axis='y', linestyle='--', alpha=0.2)
+    
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    
+
+    plt.tight_layout()
+    
+    return results, fig
 
 # ─── MAIN PROCESSING ──────────────────────────────────────────────────────────
 
@@ -262,6 +384,32 @@ def main() -> None:
     out_path = OUTPUT_DIR / f"OEG_results.csv"
     data_df.to_csv(out_path, index=False)
     print("All models were successfully tested with all prompts.")
+
+    # Run GPT-4o evaluation on GPT4o-mini outputs
+    print("\nStarting GPT-4o evaluation of GPT4o-mini...")
+    evaluated_df = GPT4o_as_Judge(data_df)
+    
+    # Save final results with evaluations
+    eval_out_path = OUTPUT_DIR / f"GPT4o-mini_OEG_results_evaluated_by_GPT4o.csv"
+    evaluated_df.to_csv(eval_out_path, index=False)
+    print("Evaluation completed and results saved.")
+
+    # Run evaluation analysis and create plot
+    stats, fig = judgment_eval(evaluated_df)
+    
+    # Print overall statistics summary
+    print("\nOverall Statistics Summary:")
+    print("=" * 50)
+    for prompt_type, categories in stats.items():
+        print(f"\n{prompt_type}:")
+        print("-" * 30)
+        for category, percentage in categories.items():
+            print(f"{category}: {percentage:.1f}%")
+    
+    # Save plot
+    plot_path = OUTPUT_DIR / "GPT4o-mini_OEG_results_evaluated_by_GPT4o.png"
+    fig.savefig(plot_path)
+    print(f"\nPlot saved to {plot_path}")
 
 
 if __name__ == "__main__":

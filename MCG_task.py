@@ -9,6 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from openai import OpenAI
 from typing import Literal
 import matplotlib.pyplot as plt
+from nltk.translate.bleu_score import sentence_bleu
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -18,12 +19,11 @@ from sklearn.metrics import (
 
 
 
-
 # ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 API_KEY = "YOUR_OPENAI_API_KEY" 
 DATA_PATH = Path("/data/IMPAQTS-PID.txt")
-OUTPUT_DIR = Path("/results/")  # Set your output directory
+OUTPUT_DIR = Path("//IMPAQTS-PID/results")  # Set your output directory
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 MAX_TOKENS = 25  # keep small to avoid unnecessary costs and speed up inference
 
@@ -36,10 +36,11 @@ MAX_TOKENS = 25  # keep small to avoid unnecessary costs and speed up inference
 # 6. call_openai_gpt → Calls the OpenAI API to get a completion from gpt-4o-mini.
 # 7 generate_for_row → Decides if the generation should be done via OpenAI API or the transformers library checking "model_name".
 # 8. evaluate_results → Evaluates the results of the model's predictions against the gold standard, computing accuracy, precision, recall, and F1 score.
+# 9. calculate_bleu_scores 
 
 def load_dataframe(path: Path) -> pd.DataFrame:
 
-    df = pd.read_csv(path, sep="\t").fillna("")
+    df = pd.read_csv(path, sep="\t", ).fillna("")
     return df
 
 def build_prompt(text: str, choices: str) -> str:
@@ -165,6 +166,32 @@ def generate_for_row(
         continuation = generated_full[len(prompt_text) :]
         return continuation.strip()
     
+def calculate_bleu_baseline(df: pd.DataFrame) -> float:
+    """Calculate accuracy baseline using BLEU4 scores between text and multiple choice options."""
+    correct_predictions = 0
+    
+    for idx, row in df.iterrows():
+        text = row['text'].split()  # Split text into words for BLEU
+        options = row['MCs'].split('\n')  # Split multiple choices
+        
+        # Calculate BLEU score for each option
+        bleu_scores = []
+        for option in options:
+            option_words = option.split()
+            # Using BLEU-4 with equal weights for n-grams
+            bleu = sentence_bleu([text], option_words, weights=(0.25, 0.25, 0.25, 0.25))
+            bleu_scores.append(bleu)
+        
+        # Get the predicted answer (A, B, C, D) based on highest BLEU score
+        max_score_idx = bleu_scores.index(max(bleu_scores))
+        predicted_answer = chr(65 + max_score_idx)  # Convert 0,1,2,3 to A,B,C,D
+        
+        # Check if prediction matches gold standard
+        if predicted_answer == row['right_answer_id']:
+            correct_predictions += 1
+    
+    return correct_predictions / len(df)
+
 def evaluate_results(
     df: pd.DataFrame,
     gold_column: str,
@@ -210,9 +237,21 @@ def evaluate_results(
     # ─── Optional plot ───────────────────────────────────────────────────────────────
     if plot_path:
         ax = metrics_df.plot(kind="bar", figsize=(10, 6))
+        
+        # Add baseline lines
+        bleu_baseline = calculate_bleu_baseline(df)
+        chance_baseline = 0.25  # 25% for 4-choice task
+        ceiling_score = 0.91    # 91% ceiling score
+        
+        # Plot the baselines
+        ax.axhline(y=bleu_baseline, color='black', linestyle=':', label='BLEU4 Baseline')
+        ax.axhline(y=chance_baseline, color='red', linestyle='-', label='Chance (25%)')
+        ax.axhline(y=ceiling_score, color='black', linewidth=2, label='Ceiling Score (91%)')
+        
         ax.set_ylim(0, 1)
         ax.set_ylabel("%")
         ax.set_title("MCG Task Evaluation Metrics")
+        ax.legend()
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
         plt.savefig(plot_path, dpi=300)
@@ -285,7 +324,7 @@ def main() -> None:
         data_df[col_key_clean] = clean_answers
 
 
-    out_file = OUTPUT_DIR / f"MCQ_results.csv"
+    out_file = OUTPUT_DIR / f"MCG_results.csv"
     data_df.to_csv(out_file, index=False)
     print(f"Saved at {out_file}: all models processed!\n")
 

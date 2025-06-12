@@ -1,0 +1,34 @@
+Ti verrà chiesto di valutare testi generati da intelligenza artificiale che esplicitano un contenuto implicito.
+Ogni schermata è composta da:
+
+- Un testo estratto da discorsi politici italiani;
+- L’annotazione di un esperto che ne esplicita il contenuto implicito;
+- L'output generato dal modello.
+Ognuno di questi elementi è introdotto, rispettivamente, dalle etichette Testo, Annotazione umana e Output.
+Ti chiediamo di valutare se il modello ha colto la sfumatura sottesa dall'annotatore umano, non se l’output generato sia sensato.
+
+I testi sono stati trascritti mantenendo il più possibile la loro forma originale. Può capitare, infatti, che ci siano ripetizioni di parole, frasi abbandonate o incoerenze sintattiche.
+Potrai rispondere selezionando tra 5 possibili annotazioni, aventi 5 diversi significati e valori:
+
+1. Totalmente corretto: l’output generato dal modello esplica un solo contenuto implicito, e tale contenuto implicito è quello presente nell'annotazione. Esso può essere leggermente parafrasato o non contenere esattamente tutti i dettagli apportati dall'annotatore se questi non sono presenti nel testo originale (per esempio, l’annotatore può riferirsi direttamente ad un politico ma tale politico nel testo non viene affatto citato). Talvolta il modello fornisce la risposta esplicitando i passaggi di ragionamento intermedi svolti per arrivare alla soluzione conclusiva: diamo "totalmente corretto" soltanto se ragionamento e la sintesi finale sono sul contenuto implicito annotato e sono totalmente corretti.
+2. Corretto tra varie opzioni: l’output generato dal modello (i) esplica multipli contenuti impliciti oppure lo stesso contenuto implicito con multiple interpretazioni e una di queste è totalmente corretta; oppure, (ii) se output generato dal modello, esplicitando nella risposta i passaggi di ragionamento intermedi svolti per arrivare alla soluzione conclusiva, non esplica il contenuto implicito corretto nella sintesi finale ma lo menziona in uno dei passaggi intermedi.
+3. Parzialmente corretto: l’output generato dal modello (i) esplica un solo contenuto implicito, e tale contenuto implicito è parzialmente in linea con quello annotato dall’annotatore umano ovvero, ci può essere qualche interpretazione diversa o sbagliata con parte dell’esplicitazione corretta; oppure (ii) nella sintesi finale o in uno dei passaggi intermedi del ragionamento che il modello esplica c'è una spiegazione del contenuto implicito annotato e questa è parzialmente corretta.
+4. Totalmente sbagliato: l’output generato dal modello è diverso da quanto annotato dell'annotatore umano.
+5. Risposta non fornita: L’output generato dal modello non contiene alcuna risposta, è una perifrasi che aggira la domanda o è un vero e proprio rifiuto di generare una risposta.
+Ecco un esempio di schermata che troverai.
+
+Testo: Diseguaglianza significa un lavoro precario, incerto, sottopagato, sfruttato, perfino gratuito, un lavoro povero. Diseguaglianza significa una prospettiva di vecchiaia senza sicurezza, senza protezione. Liberi e Uguali è in campo per battersi contro tutto questo. Per dire che l'Italia riparta rimette al centro i diritti delle persone in carne ed ossa, se lavora per estenderli, i diritti, invece che per ridurli, per aumentare il reddito di chi non ce la fa, per garantire una pensione dignitosa, per garantire un lavoro continuo e sicuro.
+
+Annotatore umano: L'Italia è ferma. 
+
+Output: Il contenuto implicito del testo evidenzia una forte critica alle attuali condizioni lavorative e sociali in Italia, suggerendo che la disuguaglianza non solo compromette la qualità della vita presente, ma crea anche incertezze per il futuro. Indica che le politiche attuali sono insufficienti o sbagliate e che è necessario un impegno collettivo, rappresentato dal movimento "Liberi e Uguali", per promuovere un cambiamento significativo. Si evidenzia l'urgenza di riforme che non solo difendano, ma amplifichino i diritti sociali ed economici, sottolineando l'importanza di un lavoro dignitoso come diritto fondamentale. Inoltre, traspare un appello a una maggiore giustizia sociale e una visione di speranza per un futuro migliore, in contrapposizione a una realtà attuale di precarietà e insicurezza.
+
+1. Totalmente corretto
+2. Corretto tra opzioni
+3. Parzialmente corretto
+4. Totalmente sbagliato
+5. Risposta non fornita
+Siccome ciò che deve essere valutato non è se l'output del modello ci appaia sensato ma se il modello ha colto la sfumatura sottesa dall'annotatore umano, in questo caso, benché ciò che il modello genera sia plausibile, quello che l'annotatore umano ha evidenziato è assente, dunque la risposta che dovresti dare per questa schermata è "totalmente sbagliato".
+Rispondi solo "Totalmente corretto", "Corretto tra varie opzioni", "Parzialmente corretto", "Totalmente Sbagliato" o "Risposta non fornita". Non aggiungere valutazioni diverse o spiegazioni.
+Di seguito trovi il testo da valutare:
+

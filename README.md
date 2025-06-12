@@ -2,12 +2,13 @@
 
 **IMPAQTS-PID** is a curated dataset and accompanying codebase designed to evaluate Large Language Models' (LLMs) ability to understand and explain implicit content, namely implicatures and presuppositions, in real-world use.
 
-IMPAQTS-PID is a dataset extracted from [IMPAQTS](https://aclanthology.org/2024.parlaclarin-1.15/) (Cominetti et al., ParlaCLARIN 2024), a corpus Italian political discourse annotate for implicit content.
+IMPAQTS-PID is a dataset extracted from [IMPAQTS: a multimodal corpus of parliamentary and other political speeches in Italy (1946-2023), annotated with implicit strategies](https://aclanthology.org/2024.parlaclarin-1.15/) (Cominetti et al., ParlaCLARIN 2024). 
 
 This repository accompanies the paper:
 
- **They want to pretend not to understand: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse**  
- _[DOI link coming soon]_
+> **They want to pretend not to understand: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse**  
+> https://arxiv.org/pdf/2506.06775
+
 
 ---
 
@@ -96,7 +97,7 @@ pip install pandas torch transformers openai scikit-learn matplotlib
 
 For optimal execution time when prompting HF models, install a CUDA-enabled `torch` version.
 
-
+---
 
 ## How to Use
 
@@ -112,7 +113,7 @@ or
 python OEG_task.py
 ```
 
-After the execution of `MCG_task.py` three new files are created the `results` directory:
+After the execution of `MCG_task.py` three new files are created in the `results` directory:
 
 * `results/MCQ_results.csv` — full per‑instance predictions.
 * `results/MCG_eval.csv`    — aggregated metrics.
@@ -121,7 +122,6 @@ After the execution of `MCG_task.py` three new files are created the `results` d
 After the execution of `OEG_task.py` one new file is created in the `results` directory:
 
 * `results/OEQ_results.csv` — full per‑instance implicit content explanations.
-
 ---
 
 ## Authors & Affiliations
@@ -130,15 +130,23 @@ After the execution of `OEG_task.py` one new file is created in the `results` di
 * **Alessandro Panunzi** – University of Florence 
 * **Sandro Pezzelle** – University of Amsterdam
 
+---
 
 ## 📄 Citation
 
-A BibTeX citation will be made available once the paper is officially published.
-
-
-## 📬 Contact
-
-For questions or collaborations, please contact the authors via GitHub.
+```bibTex
+@article{paci2025they,
+  title     = {They want to pretend not to understand: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse},
+  author    = {Paci, Walter and Panunzi, Alessandro and Pezzelle, Sandro},
+  journal   = {arXiv preprint arXiv:2506.06775},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2506.06775},
+  eprint    = {2506.06775},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+  abstract  = {Implicit content plays a crucial role in political discourse, where speakers systematically employ pragmatic strategies such as implicatures and presuppositions to influence their audiences. Large Language Models (LLMs) have demonstrated strong performance in tasks requiring complex semantic and pragmatic understanding, highlighting their potential for detecting and explaining the meaning of implicit content. However, their ability to do this within political discourse remains largely underexplored. Leveraging, for the first time, the large IMPAQTS corpus, which comprises Italian political speeches with the annotation of manipulative implicit content, we propose methods to test the effectiveness of LLMs in this challenging problem. Through a multiple-choice task and an open-ended generation task, we demonstrate that all tested models struggle to interpret presuppositions and implicatures. We conclude that current LLMs lack the key pragmatic capabilities necessary for accurately interpreting highly implicit language, such as that found in political discourse. At the same time, we highlight promising trends and future directions for enhancing model performance.}
+}
+```
 
 ---
 
@@ -148,4 +156,10 @@ For questions or collaborations, please contact the authors via GitHub.
 * **Dataset**: Released under the [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/) license.
   This means you may share and adapt the dataset for non-commercial purposes, with attribution.
 
+---
 
+## 📬 Contact
+
+For questions or collaborations, please contact the authors via GitHub.
+
+---
