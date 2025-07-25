@@ -4,11 +4,8 @@
 
 IMPAQTS-PID is a dataset extracted from [IMPAQTS: a multimodal corpus of parliamentary and other political speeches in Italy (1946-2023), annotated with implicit strategies](https://aclanthology.org/2024.parlaclarin-1.15/) (Cominetti et al., ParlaCLARIN 2024). 
 
-This repository accompanies the paper:
-
-> **They want to pretend not to understand: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse**  
-> https://arxiv.org/pdf/2506.06775
-
+This repository accompanies the paper *They want to pretend not to understand*: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse, presented at ACL 2025.
+> https://aclanthology.org/2025.findings-acl.804/
 
 ---
 
@@ -134,17 +131,27 @@ After the execution of `OEG_task.py` one new file is created in the `results` di
 
 ## 📄 Citation
 
+If you cite this paper in your work or if you use IMPAQTS-PID, please cite it as follows:
+
 ```bibTex
-@article{paci2025they,
-  title     = {They want to pretend not to understand: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse},
-  author    = {Paci, Walter and Panunzi, Alessandro and Pezzelle, Sandro},
-  journal   = {arXiv preprint arXiv:2506.06775},
-  year      = {2025},
-  url       = {https://arxiv.org/abs/2506.06775},
-  eprint    = {2506.06775},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.CL},
-  abstract  = {Implicit content plays a crucial role in political discourse, where speakers systematically employ pragmatic strategies such as implicatures and presuppositions to influence their audiences. Large Language Models (LLMs) have demonstrated strong performance in tasks requiring complex semantic and pragmatic understanding, highlighting their potential for detecting and explaining the meaning of implicit content. However, their ability to do this within political discourse remains largely underexplored. Leveraging, for the first time, the large IMPAQTS corpus, which comprises Italian political speeches with the annotation of manipulative implicit content, we propose methods to test the effectiveness of LLMs in this challenging problem. Through a multiple-choice task and an open-ended generation task, we demonstrate that all tested models struggle to interpret presuppositions and implicatures. We conclude that current LLMs lack the key pragmatic capabilities necessary for accurately interpreting highly implicit language, such as that found in political discourse. At the same time, we highlight promising trends and future directions for enhancing model performance.}
+@inproceedings{paci-etal-2025-want,
+    title = "They want to pretend not to understand: The Limits of Current {LLM}s in Interpreting Implicit Content of Political Discourse",
+    author = "Paci, Walter  and
+      Panunzi, Alessandro  and
+      Pezzelle, Sandro",
+    editor = "Che, Wanxiang  and
+      Nabende, Joyce  and
+      Shutova, Ekaterina  and
+      Pilehvar, Mohammad Taher",
+    booktitle = "Findings of the Association for Computational Linguistics: ACL 2025",
+    month = jul,
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.findings-acl.804/",
+    pages = "15569--15593",
+    ISBN = "979-8-89176-256-5",
+    abstract = "Implicit content plays a crucial role in political discourse, where systematically employ pragmatic strategies such as implicatures and presuppositions to influence their audiences. Large Language Models (LLMs) have demonstrated strong performance in tasks requiring complex semantic and pragmatic understanding, highlighting their potential for detecting and explaining the meaning of implicit content. However, their ability to do this within political discourse remains largely underexplored. Leveraging, for the very first time, the large IMPAQTS corpus comprising transcribed Italian political speeches with expert annotations of various types of implicit content, we propose methods to test the effectiveness of LLMs in this challenging problem. Through a multiple-choice task and an open-ended generation task, we demonstrate that all tested models struggle to interpret presuppositions and implicatures. To illustrate, the best-performing model provides a fully correct explanation in only one-fourth of cases in the open-ended generation setup. We conclude that current LLMs lack the key pragmatic capabilities necessary for accurately interpreting highly implicit language, such as that found in political discourse. At the same time, we highlight promising trends and future directions for enhancing model performance. We release our data and code at: $\url{https://github.com/WalterPaci/IMPAQTS-PID}$"
 }
 ```
 
