@@ -18,7 +18,7 @@ Check the [data](https://github.com/WalterPaci/IMPAQTS-PID/tree/main/data) direc
 
 It includes:
 
-- **`IMPAQTS-PID.txt`**:  
+- **`IMPAQTS-PID.csv`**:  
   A dataset of 31,822 annotated passages from Italian political speeches. Each instance includes an expert-validated explanation of implicit content (implicature or presupposition).
 
 - **`CoT_prompt.txt`**:  
