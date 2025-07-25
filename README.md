@@ -4,7 +4,7 @@
 
 IMPAQTS-PID is a dataset extracted from [IMPAQTS: a multimodal corpus of parliamentary and other political speeches in Italy (1946-2023), annotated with implicit strategies](https://aclanthology.org/2024.parlaclarin-1.15/) (Cominetti et al., ParlaCLARIN 2024). 
 
-This repository accompanies the paper *They want to pretend not to understand*: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse, presented at ACL 2025.
+This repository accompanies the paper *They want to pretend not to understand*: The Limits of Current LLMs in Interpreting Implicit Content of Political Discourse, presented at **ACL 2025**.
 > https://aclanthology.org/2025.findings-acl.804/
 
 ---
